@@ -17,6 +17,7 @@ message("Building on: ${CMAKE_SYSTEM_NAME}")
 
 option(SQLITE_BUILD_STATIC  "Build SQLite static library" ON)
 option(SQLITE_BUILD_SHARED  "Build SQLite shared library" OFF)
+option(SQLITE_BUILD_SHELL   "Build SQLite shell" OFF)
 option(WITH_SQLITE_DEBUG    "Build SQLite debug features" OFF)
 option(WITH_SQLITE_MEMDEBUG "Build SQLite memory debug features" OFF)
 option(WITH_SQLITE_RTREE    "Build R*Tree index extension" OFF)
@@ -84,27 +85,29 @@ if (SQLITE_BUILD_SHARED)
     endif()
 endif()
 
-# build shell executable
-add_executable(shell ${SRC_SHELL_FILE})
+if(SQLITE_BUILD_SHELL)
+    # build shell executable
+    add_executable(shell ${SRC_SHELL_FILE})
 
-if (SQLITE_BUILD_SHARED)
-    # preferred is shared library
-    target_link_libraries(shell ${SQLITE_DYN_NAME})
-elseif(SQLITE_BUILD_STATIC)
-    target_link_libraries(shell ${SQLITE_STATIC_NAME})
-else()
-    # no static or dynamic option selected
-    message(FATAL_ERROR "either static or dynamic option should be selected")
-endif()
+    if (SQLITE_BUILD_SHARED)
+        # preferred is shared library
+        target_link_libraries(shell ${SQLITE_DYN_NAME})
+    elseif(SQLITE_BUILD_STATIC)
+        target_link_libraries(shell ${SQLITE_STATIC_NAME})
+    else()
+        # no static or dynamic option selected
+        message(FATAL_ERROR "either static or dynamic option should be selected")
+    endif()
 
-# installation
-list(APPEND TO_INSTALL shell)
-if(SQLITE_BUILD_SHARED)
-    list(APPEND TO_INSTALL ${SQLITE_DYN_NAME})
-endif()
-if(SQLITE_BUILD_STATIC)
-    list(APPEND TO_INSTALL ${SQLITE_STATIC_NAME})
-endif()
+    # installation
+    list(APPEND TO_INSTALL shell)
+    if(SQLITE_BUILD_SHARED)
+        list(APPEND TO_INSTALL ${SQLITE_DYN_NAME})
+    endif()
+    if(SQLITE_BUILD_STATIC)
+        list(APPEND TO_INSTALL ${SQLITE_STATIC_NAME})
+    endif()
+endif(SQLITE_BUILD_SHELL)
 
 install(TARGETS ${TO_INSTALL}
         RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
